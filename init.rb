@@ -8,7 +8,7 @@ Redmine::Plugin.register :redmine_advancedimage do
   name 'Redmine Advanced Image plugin'
   author '5inf'
   description 'This macro provides images subtitles and anotation capabilites.'
-  version '0.0.0'
+  version '0.0.1'
   url 'https://github.com/5inf/redmine_advancedimage'
   author_url 'https://github.com/5inf/'
 
