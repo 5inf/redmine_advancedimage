@@ -47,6 +47,13 @@ macro :advimg do |obj, args, text|
         filename = args.first
         raise 'Filename required' unless filename.present?
 
+regarrow = /arrow\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?(\d+)\s?,\s?(\d+)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
+regcircle = /circle\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?(\d+)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
+regtext = /text\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?"(\w+)"\s?,\s?"(\w+)"\s?\)/m
+regbox = /box\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
+#https://regex101.com/
+
+
         if obj && obj.respond_to?(:attachments) && attachment = Attachment.latest_attach(obj.attachments, filename)
           title = options[:title] || attachment.title || filename
           divid = "advimg" + SecureRandom.urlsafe_base64(8)
@@ -58,30 +65,101 @@ macro :advimg do |obj, args, text|
 
           #TODO: calculate width and height accordingly to keep aspect ratio and also provide a correct size for the svg image
 
+          out = ''.html_safe
+
           svgimg="<image href='"+imgurl+"' height='"+height+"' width='"+width+"'/>"
           svgimg=svgimg.html_safe
                 if text.present?
-                        svgdefs = "<defs><marker id='head' orient='auto' markerWidth='4' markerHeight='6' refX='0.1' refY='2'> <path d='M0,0 V4 L2,2 Z' fill='red' /> </marker>  </defs> ".html_safe
-                        svgcircle = "<circle cx='50%' cy='50%' r='20%' stroke='green' stroke-width='5' fill='#00000000' />".html_safe
-                        svgrectangle="<rect x='50%' y='20%' width='30%' height='40%'  style='fill:blue;stroke:pink;stroke-width:5;fill-opacity:0.1;stroke-opacity:1.0' />".html_safe
-                        svgpath="<path marker-end='url(#head)' stroke-width='5' fill='none' stroke='black' d='M0,0 C45,45 45,-45 90,0' />".html_safe
-                        svgline1="<line marker-end='url(#head)' x1='10%' y1='10%' x2='10%' y2='30%' style='stroke:rgb(255,0,0);stroke-width:5' />".html_safe
-                        svgline2="<line marker-end='url(#head)' x1='20%' y1='10%' x2='20%' y2='30%' style='stroke:rgb(100,100,0);stroke-width:5' />".html_safe
-                        svgline3="<line marker-end='url(#head)' x1='30%' y1='10%' x2='30%' y2='30%' style='stroke:rgb(0,255,0);stroke-width:5' />".html_safe
-                        svgtext="<text x='10%' y='55%' fill='red'>Annotiation Text</text>".html_safe
+
+#                       out << content_tag(:p, text)
+
+                        svgdefs=""
+                        svgline1=""
+                        svgtext=""
+                        svgcircle=""
+                        svgrectangle=""
+
+                        lines=text.split(/\n/)
+
+                        lines.each do |line|
+                                line.scan(regarrow) do |match|
+                                        #out << "arrow"+match.to_s
+                                        x2= match[0].to_s
+                                        y2= match[1].to_s
+                                        angle=match[2].to_s
+                                        length=match[3].to_s
+                                        color=match[4].to_s
+                                        strokeWidth=match[5].to_s
+                                        x1=(x2.to_i-length.to_i*Math::sin(angle.to_i*Math::PI/180)).to_s
+                                        y1=(y2.to_i-length.to_i*Math::cos(angle.to_i*Math::PI/180)).to_s
+                                        headid="headid" + SecureRandom.urlsafe_base64(8)
+                                        svgdefs = "<defs><marker id='"+headid+"' orient='auto' markerWidth='4' markerHeight='6' refX='0.1' refY='2'> <path d='M0,0 V4 L2,2 Z' fill='$
+                                        svgdefs=svgdefs.html_safe
+                                        svgline1= "<line marker-end='url(#"+headid+")' x1='"+x1+"%' y1='"+y1+"%' x2='"+x2+"%' y2='"+y2+"%' style='stroke:"+color+";stroke-width:"+st$
+                                        svgline1=svgline1.html_safe
+                                end
+
+                                line.scan(regtext) do |match|
+                                        #out << "text"+match.to_s
+                                        x1= match[0].to_s
+                                        y1= match[1].to_s
+                                        innertext=match[2].to_s
+                                        color=match[3].to_s
+                                        svgtext="<text x='"+x1+"%' y='"+y1+"%' fill='"+color+"'>"+innertext+"</text>"
+                                        svgtext=svgtext.html_safe
+
+                                end
+                                line.scan(regtext) do |match|
+                                        #out << "text"+match.to_s
+                                        x1= match[0].to_s
+                                        y1= match[1].to_s
+                                        innertext=match[2].to_s
+                                        color=match[3].to_s
+                                        svgtext="<text x='"+x1+"%' y='"+y1+"%' fill='"+color+"'>"+innertext+"</text>"
+                                        svgtext=svgtext.html_safe
+
+                                end
+
+                                line.scan(regbox) do |match|
+                                        #out << "box"+match.to_s
+                                        x1= match[0].to_s
+                                        y1= match[1].to_s
+                                        x2= match[2].to_s
+                                        y2= match[3].to_s
+                                        rectwidth=(x1.to_i-x2.to_i).abs.to_s
+                                        rectheight=(y1.to_i-y2.to_i).abs.to_s
+                                        color=match[4].to_s
+                                        strokeWidth=match[5].to_s
+                                        svgrectangle="<rect x='"+x1+"%' y='"+y1+"%' width='"+rectwidth+"%' height='"+rectheight+"%'  style='fill:blue;stroke:pink;stroke-width:5;fil$
+                                        svgrectangle=svgrectangle.html_safe
+
+                                end
+
+                                line.scan(regcircle) do |match|
+                                        #out << "circle"+match.to_s
+                                        x1= match[0].to_s
+                                        y1= match[1].to_s
+                                        radius=match[2].to_s
+                                        color=match[3].to_s
+                                        strokeWidth=match[4].to_s
+                                        svgcircle = "<circle cx='"+x1+"%' cy='"+y1+"%' r='"+radius+"%' stroke='"+color+"' stroke-width='"+strokeWidth+"' fill='#00000000' />"
+                                        svgcircle=svgcircle.html_safe
+
+                                end
+
+
+                        end
 
                         #svgimage = content_tag(:svg, safe_join([svgdefs, svgcircle, svgrectangle, svgpath, svgline, svgimg]), :width => width, :height => height)
-                        svgimage = content_tag(:svg, safe_join([svgdefs, svgimg, svgline1, svgline2, svgline3, svgrectangle, svgcircle, svgtext]), :width => width, :height => height)
+                        svgimage = content_tag(:svg, safe_join([svgdefs, svgimg, svgline1, svgrectangle, svgcircle, svgtext]), :width => width, :height => height)
 
                 else
 
                         svgimage = content_tag(:svg, safe_join([svgimg]), :width => width, :height => height)
 
                 end
-
-          out = ''.html_safe
           url= url_for(:controller => 'attachments', :action => 'show', :id => attachment)
-          link = link_to(svgimage, url, :class => 'thumbnail', :title => title, :name => filename)
+          link = link_to(svgimage, url, :class => 'thumbnail', :title => title, :name => filename, :target => '_blank')
           label = content_tag(:p, content_tag(:strong, 'Figure: '+title))
 
           innerdivtop = content_tag(:div, link, :id => 'innertop'+divid)
