@@ -43,13 +43,14 @@ Redmine::Plugin.register :redmine_advancedimage do
 	  DESCRIPTION
 
 	  macro :advimg do |obj, args, text|
-			args, options = extract_macro_options(args, :width, :height, :title)
+			args, options = extract_macro_options(args, :width, :height, :title, :label)
 	    filename = args.first
+			label = options[:label] || filename
 	    raise 'Filename required' unless filename.present?
 	
 			regarrow = /arrow\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?(\d+)\s?,\s?(\d+)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
 			regcircle = /circle\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?(\d+)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
-			regtext = /text\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?"(\w+)"\s?,\s?"(\w+)"\s?\)/m
+			regtext = /text\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?"([\w\s]+)"\s?,\s?"(\w+)"\s?\)/m
 			regbox = /box\(\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
 			#https://regex101.com/
 
@@ -141,9 +142,9 @@ Redmine::Plugin.register :redmine_advancedimage do
     
   			url= url_for(:controller => 'attachments', :action => 'show', :id => attachment)
      		link = link_to(svgimage, url, :class => 'thumbnail', :title => title, :name => filename, :target => '_blank')
-      	label = content_tag(:p, content_tag(:strong, 'Figure: '+title))
+      	labeltag = content_tag(:p, content_tag(:strong, 'Figure ('+filename+'): '+title))
       	innerdivtop = content_tag(:div, link, :id => 'innertop'+divid)
-      	innerdivbottom = content_tag(:div, label, :id => 'innerbottom'+divid)
+      	innerdivbottom = content_tag(:div, labeltag, :id => 'figure.'+label)
       	outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'outer'+divid)
       	out << outerdiv
 
@@ -154,14 +155,52 @@ Redmine::Plugin.register :redmine_advancedimage do
     	end
   	end
 
-  	macro :imglink do |obj, args|
-    	args, options = extract_macro_options(args, :width, :height, :title)
-    	filename = args.first
-    	raise 'Filename required' unless filename.present?
+		macro :imglink do |obj, args|
+    	args, options = extract_macro_options(args, :label)
+    	filename = args.first || options[:label]
+			raise 'Filename or lable required' unless filename.present?
 
 	    out = ''.html_safe
-	    #out << content_tag(:a,'Figure: '+filename, :href => '#'+filename)
-	    out << content_tag(:a,''+filename, :href => '#'+filename)
+	    #out << content_tag(:a,'Figure '+filename, :href => '#'+filename)
+	    out << content_tag(:a, 'Abbildung '+filename, :href => '#figure.'+filename)
+	    out
+	  end
+
+	  macro :tableheader do |obj, args, text|
+			args, options = extract_macro_options(args, :label, :title)
+    	raise 'label argument required' unless options[:label].present?
+			label = options[:label] 
+			title = options[:title] || label
+			
+
+			out = ""
+			table = ""
+			if text.present?
+				table = render(:partial => 'common/markup', :locals => {:markup_text_formatting => 'textile', :markup_text => text })
+#				table = render(:partial => 'common/markup', :locals => {:markup_text_formatting => 'textile', :markup_text => text })
+			else
+				raise "no table code provided"
+			end
+
+				table = table.html_safe
+
+				labeldiv = content_tag(:p, content_tag(:strong, 'Table ('+label+'): '+title))
+        innerdivtop = content_tag(:div, labeldiv)
+        innerdivbottom = content_tag(:div, table)
+        outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'table.'+label)
+        out = outerdiv
+
+
+			out
+		end
+
+		macro :tablelink do |obj, args|
+    	args, options = extract_macro_options(args, :label)
+    	raise 'label argument required' unless options[:label].present?
+			label = options[:label] 
+
+	    out = ''.html_safe
+	    out << content_tag(:a,'Tabelle '+label, :href => '#table.'+label)
 	    out
 	  end
 
