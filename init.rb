@@ -155,7 +155,7 @@ Redmine::Plugin.register :redmine_advancedimage do
       end
     end
 
-    macro :imgagelink do |obj, args|
+    macro :imagelink do |obj, args|
       args, options = extract_macro_options(args, :label)
       filename = args.first || options[:label]
       raise 'Filename or lable required' unless filename.present?
