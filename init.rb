@@ -14,21 +14,22 @@ Redmine::Plugin.register :redmine_advancedimage do
 
     Redmine::WikiFormatting::Macros.register do
     desc <<-DESCRIPTION
-Show an image with a subtitle and optionally add annotations to the image (not implemented yet)
+Show an figure consisting of an image with title below and optionally add annotations to the image.
+The image can be referenced by the {{figurelink}} macro
 Syntax:
 	{{figure(FILENAME[,label=LABEL,title=TITLE,width=WIDTH,height=HEIGHT,border=BORDER)
-	[ANNOTATIONS]
+		[ANNOTATIONS]
 	}}
-  FILENAME = the filename of the attached image
+	FILENAME = the filename of the attached image
 	LABEL = Label under which the figure is referenced. FILENAME is used if no label is given
-  TITLE = Title to display below the image. If empty the LABEL or FILENAME is used
+	TITLE = Title to display below the image. If empty the LABEL or FILENAME is used
 	WIDTH = The maximum width of the image, aspect ratio is kept
-  HEIGHT = The maximum height of the image, aspect ratio is kept
-  BORDER = An optional border around the actual image to provide extra space for annotations
+	HEIGHT = The maximum height of the image, aspect ratio is kept
+	BORDER = An optional border around the actual image to provide extra space for annotations
 	ANNOTATIONS = Annotations overlaying the picture. Supported are arrows, boxes, circles and text. See examples for details
 
-  {{figurelink(LABEL,title=TITLE)}}
-  
+	{{figurelink(LABEL,title=TITLE)}}
+
 Examples:
 	{{figure(test.png)}}
 
@@ -42,8 +43,6 @@ Examples:
 		circle((50,50),20,"green",5)
 		text((10,55),"text","red")
 	}}
-	
-	{{figurelink(test.png)}}
 DESCRIPTION
 
     macro :figure do |obj, args, text|
@@ -177,6 +176,15 @@ DESCRIPTION
       end
     end
 
+
+    desc <<-DESCRIPTION
+Print a link to a figure crated by a {{figure}} macro. The label must match the label of the figure.
+Syntax:
+	{{figurelink(LABEL,title=TITLE)}}
+  
+Examples:
+	{{figurelink(test.png)}}
+DESCRIPTION
     macro :figurelink do |obj, args|
       args, options = extract_macro_options(args, :title)
       label = args.first
@@ -189,6 +197,22 @@ DESCRIPTION
       out
     end
 
+    desc <<-DESCRIPTION
+Print a table with a table header which can be linked to by the {{tablelink}} macro.
+Syntax:
+	{{tablelink(LABEL,title=TITLE)
+		TABLEDEFINITION	
+	}}
+	LABEL = the label referencing the table
+	TITLE = an optional title
+	TABLEDEFINITION = the actual code of the table in Wiki syntax  e.g. |col1|col2|.
+Examples:
+	{{table(tablelabel,title=The table of two entries)
+		|_. Nr. |_. Entry |
+		| 1 | Entry 1|
+		| 2 | Entry 2|
+	}}
+DESCRIPTION
     macro :table do |obj, args, text|
       args, options = extract_macro_options(args, :title)
       label = args.first
@@ -217,6 +241,15 @@ DESCRIPTION
       out
     end
 
+    desc <<-DESCRIPTION
+Print a link to a table crated by the {{table}} macro. The label must match the label of the table.
+Syntax:
+	{{tablelink(LABEL,title=TITLE)	}}
+	LABEL = the label referencing the table
+	TITLE = an optional title
+Examples:
+	{{tablelink(tablelabel)}}
+DESCRIPTION
     macro :tablelink do |obj, args|
       args, options = extract_macro_options(args, :title)
       label = args.first 
@@ -229,7 +262,19 @@ DESCRIPTION
       out
     end
 
-    macro :formula do |obj, args, text|
+    desc <<-DESCRIPTION
+Print a (latex) fomula which can be referenced by the {{formulalink}} macro.
+Syntax:
+	{{formula(LABEL,title=TITLE)}}
+	LABEL = the label used for referencing the formula
+	TITLE = an optional title
+	FORMULA = the actual code of the formula e.g. 4+5 or $4+5$. Using Laxtex fomulas requires the Redmine LaTeX MathJax Macro to be installed
+Examples:
+	{{formula(sum,title=sum over i)
+		$\sum_i$
+	}}
+DESCRIPTION
+		macro :formula do |obj, args, text|
       args, options = extract_macro_options(args, :title)
       label = args.first 
       title = options[:title] || label
@@ -257,6 +302,15 @@ DESCRIPTION
       out
     end
 
+    desc <<-DESCRIPTION
+Print a link to a formula crated by the {{formula}} macro. The label must match the label of the formula.
+Syntax:
+  {{formulalink(LABEL,title=TITLE)}}
+	LABEL = the label referencing the table
+	TITLE = an optional title
+Examples:
+	{{formulalink(formulalabel)}}
+DESCRIPTION
     macro :formulalink do |obj, args|
       args, options = extract_macro_options(args, :title)
       label = args.first
