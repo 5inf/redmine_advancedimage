@@ -42,7 +42,7 @@ Redmine::Plugin.register :redmine_advancedimage do
   
     DESCRIPTION
 
-    macro :advimg do |obj, args, text|
+    macro :image do |obj, args, text|
       args, options = extract_macro_options(args, :width, :height, :title, :label)
       filename = args.first
       label = options[:label] || filename
@@ -155,7 +155,7 @@ Redmine::Plugin.register :redmine_advancedimage do
       end
     end
 
-    macro :imglink do |obj, args|
+    macro :imgagelink do |obj, args|
       args, options = extract_macro_options(args, :label)
       filename = args.first || options[:label]
       raise 'Filename or lable required' unless filename.present?
@@ -166,7 +166,7 @@ Redmine::Plugin.register :redmine_advancedimage do
       out
     end
 
-    macro :tableheader do |obj, args, text|
+    macro :table do |obj, args, text|
       args, options = extract_macro_options(args, :label, :title)
       raise 'label argument required' unless options[:label].present?
       label = options[:label] 
@@ -201,6 +201,44 @@ Redmine::Plugin.register :redmine_advancedimage do
 
       out = ''.html_safe
       out << content_tag(:a,'Tabelle '+label, :href => '#table.'+label)
+      out
+    end
+
+    macro :formula do |obj, args, text|
+      args, options = extract_macro_options(args, :label, :title)
+      raise 'label argument required' unless options[:label].present?
+      label = options[:label] 
+      title = options[:title] || label
+      
+
+      out = ""
+      table = ""
+      if text.present?
+				#this reqires redmine 4.1
+        table = render(:partial => 'common/markup', :locals => {:markup_text_formatting => 'textile', :markup_text => text })
+#       table = render(:partial => 'common/markup', :locals => {:markup_text_formatting => 'markdown', :markup_text => text })
+      else
+        raise "no formula code provided"
+      end
+
+        table = table.html_safe
+
+        labeldiv = content_tag(:p, content_tag(:strong, 'Formula ('+label+'): '+title))
+        innerdivtop = content_tag(:div, labeldiv)
+        innerdivbottom = content_tag(:div, table)
+        outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'formula.'+label)
+        out = outerdiv
+
+      out
+    end
+
+    macro :formulalink do |obj, args|
+      args, options = extract_macro_options(args, :label)
+      raise 'label argument required' unless options[:label].present?
+      label = options[:label] 
+
+      out = ''.html_safe
+      out << content_tag(:a,'Formel '+label, :href => '#formula.'+label)
       out
     end
 
