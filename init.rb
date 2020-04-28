@@ -1,14 +1,14 @@
 # encoding: utf-8
 
 require 'redmine'
-
+require File.dirname(__FILE__) + '/lib/redmine_advancedimage/hooks/view_layouts_base_html_head_hook'
 
 Redmine::Plugin.register :redmine_advancedimage do
 
   name 'Redmine advanced image plugin'
   author '5inf'
   description 'This plugin provides a macro to display images with subtitles and anotation capabilites an a macro to reference an image from within a wiki page.'
-  version '0.0.2'
+  version '0.0.3'
   url 'https://github.com/5inf/redmine_advancedimage'
   author_url 'https://github.com/5inf/'
 
