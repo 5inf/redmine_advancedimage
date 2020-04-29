@@ -163,7 +163,7 @@ DESCRIPTION
     
         url= url_for(:controller => 'attachments', :action => 'show', :id => attachment)
         link = link_to(svgimage, url, :class => 'thumbnail', :title => title, :name => filename, :target => '_blank')
-        labeltag = content_tag(:p, content_tag(:strong, 'Abbildung ('+filename+'|'+label+'): '+title))
+        labeltag = content_tag(:p, content_tag(:strong, 'Abbildung: '+title), :title => "label: "+label)
         innerdivtop = content_tag(:div, link, :id => 'figure.'+label)
         innerdivbottom = content_tag(:div, labeltag, :id => 'innerbottom.'+divid)
         outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'outer'+divid)
@@ -193,7 +193,7 @@ DESCRIPTION
 
       out = ''.html_safe
       #out << content_tag(:a,'Figure '+filename, :href => '#'+filename)
-      out << content_tag(:a, 'Abbildung '+title, :href => '#figure.'+label)
+      out << content_tag(:a, 'Abbildung '+title, :href => '#figure.'+label, :title => label)
       out
     end
 
@@ -233,7 +233,7 @@ DESCRIPTION
 
         table = table.html_safe
 
-        labeldiv = content_tag(:p, content_tag(:strong, 'Table ('+label+'): '+title))
+        labeldiv = content_tag(:p, content_tag(:strong, 'Table: '+title), :title => "label: "+label)
         innerdivtop = content_tag(:div, labeldiv)
         innerdivbottom = content_tag(:div, table)
         outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'table.'+label)
@@ -260,7 +260,7 @@ DESCRIPTION
 
 
       out = ''.html_safe
-      out << content_tag(:a,'Tabelle '+title, :href => '#table.'+label)
+      out << content_tag(:a,'Tabelle '+title, :href => '#table.'+label, :title => label)
       out
     end
 
@@ -297,7 +297,7 @@ DESCRIPTION
 
         table = table.html_safe
 
-        labeldiv = content_tag(:p, content_tag(:strong, 'Formel ('+label+'): '+title))
+        labeldiv = content_tag(:p, content_tag(:strong, 'Formel: '+title), :title => "label: "+label)
         innerdivtop = content_tag(:div, labeldiv)
         innerdivbottom = content_tag(:div, table)
         outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'formula.'+label)
@@ -323,7 +323,7 @@ DESCRIPTION
 
 
       out = ''.html_safe
-      out << content_tag(:a,'Formel '+label, :href => '#formula.'+label)
+      out << content_tag(:a,'Formel '+label, :href => '#formula.'+label, :title => label)
       out
     end
 
