@@ -140,7 +140,7 @@ DESCRIPTION
               rectheight=(y1.to_i-y2.to_i).abs.to_s
               color=match[4].to_s
               strokeWidth=match[5].to_s
-              svgrectangle="<rect x='"+x1+widthunit+"' y='"+y1+heightunit+"' width='"+rectwidth+widthunit+"' height='"+rectheight+heightunit+"' stroke='"+color+"' stroke-width='"+strokeWidth+"' />"
+              svgrectangle="<rect x='"+x1+widthunit+"' y='"+y1+heightunit+"' width='"+rectwidth+widthunit+"' height='"+rectheight+heightunit+"' stroke='"+color+"' stroke-width='"+strokeWidth+"' fill='#00000000' />"
               svgrectangles.push(svgrectangle.html_safe)
             end 
 
