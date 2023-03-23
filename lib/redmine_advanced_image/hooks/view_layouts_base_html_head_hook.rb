@@ -1,7 +1,7 @@
 module RedmineAdvancedImage
 	module Hooks
 
-  	class SortableTableHook < Redmine::Hook::ViewListener
+  	class ViewLayoutsBaseHtmlHeadHook < Redmine::Hook::ViewListener
     	include ActionView::Helpers::TagHelper
 	
 			def view_layouts_base_html_head(context)
