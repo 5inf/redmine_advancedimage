@@ -17,23 +17,26 @@ Redmine::Plugin.register :redmine_advancedimage do
 Show an figure consisting of an image with title below and optionally add annotations to the image.
 The image can be referenced by the {{figurelink}} macro
 Syntax:
-	{{figure(FILENAME[,label=LABEL,title=TITLE,width=WIDTH,height=HEIGHT,border=BORDER)
+	{{figure(FILENAME[,label=LABEL,title=TITLE,hidetitle=HIDETITLE,width=WIDTH,height=HEIGHT,border=BORDER)
 		[ANNOTATIONS]
 	}}
 	FILENAME = the filename of the attached image
 	LABEL = Label under which the figure is referenced. FILENAME is used if no label is given
 	TITLE = Title to display below the image. If empty the LABEL or FILENAME is used
+	HIDETITLE = TRUE to not show the title text normaly displayed under the image
 	WIDTH = The maximum width of the image, aspect ratio is kept
 	HEIGHT = The maximum height of the image, aspect ratio is kept
 	BORDER = An optional border around the actual image to provide extra space for annotations
 	ANNOTATIONS = Annotations overlaying the picture. Supported are arrows, boxes, circles and text. See examples for details
 
-	{{figurelink(LABEL,title=TITLE)}}
+	{{figurelink(filename,title=TITLE)}}
 
 Examples:
 	{{figure(test.png)}}
 
 	{{figure(test.png,width=200px,height=400px,title=title)
+	
+	{{figure(test.png,width=200px,height=400px,title=title,hidetitle=true)
 
 	{{figure(test.png,label=test,title=A test image,width=200px,height=400px,border=20)
 		arrow((10,10),90,20,"red",2)
@@ -46,7 +49,7 @@ Examples:
 DESCRIPTION
 
     macro :figure do |obj, args, text|
-      args, options = extract_macro_options(args, :width, :height, :title, :label, :border)
+      args, options = extract_macro_options(args, :width, :height, :hidetitle, :title, :label, :border)
       filename = args.first
       label = options[:label] || filename
 			border= options[:border].to_i || 0
@@ -58,6 +61,7 @@ DESCRIPTION
       regbox = /box\(\s?\(\s?(-?\d+)\s?,\s?(-?\d+)\s?\)\s?,\s?\(\s?(\d+)\s?,\s?(\d+)\s?\)\s?,\s?"(\w+)"\s?,\s?(\d+)\s?\)/m
       #https://regex101.com/
 
+      hidetitle = options[:hidetitle].present?
 
       if obj && obj.respond_to?(:attachments) && attachment = Attachment.latest_attach(obj.attachments, filename)
         title = options[:title] || attachment.title || filename
@@ -89,7 +93,7 @@ DESCRIPTION
   
         out = ''.html_safe
 
-        svginternalimage="<image href='"+imgurl+"' x='"+xoffset.to_s+widthunit+"', y='"+yoffset.to_s+heightunit+"', height='"+heightvalue.to_s+heightunit+"' width='"+widthvalue.to_s+widthunit+"'/>"
+        svginternalimage="<image alt='"+imgurl+"' href='"+imgurl+"' x='"+xoffset.to_s+widthunit+"', y='"+yoffset.to_s+heightunit+"', height='"+heightvalue.to_s+heightunit+"' width='"+widthvalue.to_s+widthunit+"'/>"
         svginternalimage=svginternalimage.html_safe
       
         if text.present?
@@ -163,7 +167,11 @@ DESCRIPTION
     
         url= url_for(:controller => 'attachments', :action => 'show', :id => attachment)
         link = link_to(svgimage, url, :class => 'thumbnail', :title => title, :name => filename, :target => '_blank')
-        labeltag = content_tag(:p, content_tag(:strong, 'Abbildung: '+title), :title => "label: "+label)
+	if hidetitle
+		labeltag = ""
+	else
+		labeltag = content_tag(:p, content_tag(:strong, 'Abbildung: '+title), :title => "label: "+label)
+	end
         innerdivtop = content_tag(:div, link, :id => 'figure.'+label)
         innerdivbottom = content_tag(:div, labeltag, :id => 'innerbottom.'+divid)
         outerdiv = content_tag(:div, safe_join([innerdivtop, ' ', innerdivbottom]), :id => 'outer'+divid)
